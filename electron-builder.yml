@@ -1,0 +1,38 @@
+appId: com.dsh.desktop
+productName: DeepSeek Harness Desktop
+directories:
+  output: release
+  buildResources: resources
+files:
+  - out/**
+  - package.json
+extraResources:
+  - from: runtime
+    to: runtime
+    filter:
+      - "**/*"
+      - "!**/*.map"
+      - "!**/.npm-cache/**"
+      - "!**/.pnpm-store/**"
+  - from: resources/ico.png
+    to: ico.png
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  icon: resources/ico.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: DeepSeek Harness Desktop
+  uninstallDisplayName: DeepSeek Harness Desktop
+publish:
+  - provider: generic
+    url: https://downloads.example.com/dsh-desktop
+npmRebuild: false
+electronDownload:
+  cache: .electron-cache

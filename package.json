@@ -1,0 +1,29 @@
+{
+  "name": "deepseek-harness-desktop",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness Desktop - Electron 封装，插件可扩展",
+  "main": "out/main/index.js",
+  "author": "dsh-desktop contributors",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "prepare:runtime": "node scripts/prepare-runtime.mjs",
+    "package:win": "npm run build && electron-builder --win",
+    "package:win:portable": "npm run build && electron-builder --win portable"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "http-proxy-agent": "^9.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.6"
+  }
+}
