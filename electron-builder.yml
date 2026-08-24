@@ -16,6 +16,9 @@ extraResources:
       - "!**/.pnpm-store/**"
   - from: resources/ico.png
     to: ico.png
+  # 插件管理脚本：随包分发，安装目录或 resources/ 下均可定位（%~dp0 自适应）
+  - from: scripts/install-plugin.cmd
+    to: ./install-plugin.cmd
 win:
   target:
     - target: nsis

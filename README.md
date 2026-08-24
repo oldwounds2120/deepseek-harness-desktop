@@ -11,7 +11,7 @@
 - **数据隔离**：`DSH_HOME` 指向应用数据目录（`%APPDATA%\DeepSeek Harness Desktop\dsh-home`），卸载干净、不污染 `~/.dsh`
 - **端口自动分配**：`--port 0` 由系统分配端口，自动解析服务地址
 - **托盘常驻**：关闭窗口最小化到托盘，dsh 服务后台继续运行；托盘可启停/重启服务、真正退出
-- **插件机制**：完整复用 dsh 官方插件体系（`dsh.bundle` + Cordis 层栈），安装即热重载
+- **插件机制**：完整复用 dsh 官方插件体系（`dsh.bundle` + Cordis 层栈），安装即热重载；随包内置 `install-plugin.cmd` 管理脚本（add/remove/update/list）
 - **开机自启**、**日志查看**、**自动更新**框架
 
 ## 环境要求
@@ -68,21 +68,38 @@ npm run package:win
 
 ## 插件安装
 
-插件 = 声明 `dsh.bundle.patch` 的 npm 包。当前通过命令行安装（桌面端 UI 接入待后续版本）：
+插件 = 声明 `dsh.bundle.patch` 的 npm 包。安装包内置插件管理脚本 `install-plugin.cmd`（随包分发在应用根目录，源码位于 `scripts/install-plugin.cmd`），自动定位安装位置与数据目录，**任意目录下用完整路径调用即可**，无需手动设置 `DSH_HOME`。
 
-```bash
-# 指向桌面版数据目录
-set DSH_HOME=%APPDATA%\DeepSeek Harness Desktop\dsh-home
+| 命令 | 作用 |
+|---|---|
+| `install-plugin.cmd add <package>` | 安装插件 |
+| `install-plugin.cmd remove <package>` | 卸载插件 |
+| `install-plugin.cmd update <package>` | 更新插件 |
+| `install-plugin.cmd list` | 查看已安装插件 |
 
-# 进入 web profile 并安装（示例）
-cd %DSH_HOME%\profiles\web
-node <项目>\runtime\node\node-v22.20.0-win-x64\node.exe ^
-  <项目>\runtime\pnpm\package\bin\pnpm.cjs add <plugin-package>
+把应用根目录加入 PATH 后可省略完整路径，任意目录直接执行：
 
-# 将包名加入 profiles/web/package.json 的 dsh.profile.bundles 后重启应用
+```cmd
+set PATH=%PATH%;C:\Program Files\DeepSeek Harness Desktop
+install-plugin add dshmarket
 ```
 
-插件来源：GitHub 话题 [`dsh-plugin`](https://github.com/topics/dsh-plugin)、npm 上 `@deepseek-ai/dsh-*` 官方包。
+> **注意事项**
+> - 安装 / 卸载 / 更新前请先从托盘退出应用；`list` 为只读，可随时执行。
+> - 无参数运行脚本会打印完整用法帮助。
+
+**遇 `[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: <pkg>`**：pnpm 出于供应链安全默认忽略依赖构建脚本（例如原生终端模块 `node-pty`）。编辑 profile 下的 `pnpm-workspace.yaml`，在 `allowBuilds` 中添加放行后重跑安装命令：
+
+```yaml
+allowBuilds:
+  node-pty: true
+```
+
+配置文件位置：`%APPDATA%\DeepSeek Harness Desktop\dsh-home\profiles\web\pnpm-workspace.yaml`
+
+**验证是否装好**：`install-plugin.cmd list`；或打开 `...\dsh-home\profiles\web\package.json`，确认包名出现在 `dsh.profile.bundles`（生效中的层栈）而非仅出现在 `dependencies`。
+
+**插件来源**：GitHub 话题 [`dsh-plugin`](https://github.com/topics/dsh-plugin)、npm 官方包 `@deepseek-ai/dsh-*`；也可先安装 `dshmarket`（可视化插件市场），在应用内浏览社区插件并一键安装。
 
 ## 架构速览
 
@@ -102,6 +119,7 @@ src/
 └── shared/                # IPC 契约（通道名 + 类型）
 
 scripts/prepare-runtime.mjs  # 生成 runtime/（Node+dsh+pnpm，hoisted 扁平结构）
+scripts/install-plugin.cmd   # 插件管理脚本（%~dp0 定位安装根，随包分发到应用根目录）
 runtime/                    # 运行时资源（gitignore，随包分发，启动迁移到 userData）
 ```
 
